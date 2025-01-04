@@ -17,32 +17,33 @@ if uploaded_file:
     # Open the uploaded image file
     original_image = Image.open(uploaded_file).convert("RGBA")
 
-    # Dynamically adjust image width based on screen size
-    max_width = 400 if st.session_state.get("is_mobile", False) else 800
-    display_image = original_image  # Keep the original for quality
-    if original_image.width > max_width:
-        aspect_ratio = original_image.height / original_image.width
-        new_height = int(max_width * aspect_ratio)
-        display_image = original_image.resize((max_width, new_height), Image.Resampling.LANCZOS)
+    # Downscale the image for the cropper
+    cropper_image = original_image.resize(
+        (original_image.width // 4, original_image.height // 4), Image.Resampling.LANCZOS
+    )
 
-    # Display the cropper directly on the resized image for cropping
+    # Display the cropper directly on the downscaled image
     st.write("Adjust the crop box to a 1:1 aspect ratio and click 'Generate Image with Frame'.")
     cropped_preview = st_cropper(
-        display_image, aspect_ratio=(1, 1), return_type="box", box_color="blue"
+        cropper_image,
+        aspect_ratio=(1, 1),
+        return_type="box",
+        box_color="blue",
     )
 
     # Button to generate the cropped image with the frame
     if st.button("Generate Image with Frame"):
         if cropped_preview:
-            # Map crop coordinates directly
+            # Map crop coordinates back to the original image size
+            scale_factor = 4  # Inverse of the downscale factor
             crop_box = (
-                int(cropped_preview["left"]),
-                int(cropped_preview["top"]),
-                int(cropped_preview["left"] + cropped_preview["width"]),
-                int(cropped_preview["top"] + cropped_preview["height"]),
+                int(cropped_preview["left"] * scale_factor),
+                int(cropped_preview["top"] * scale_factor),
+                int((cropped_preview["left"] + cropped_preview["width"]) * scale_factor),
+                int((cropped_preview["top"] + cropped_preview["height"]) * scale_factor),
             )
 
-            # Crop the original high-quality image (without resizing it)
+            # Crop the original high-quality image
             cropped_image = original_image.crop(crop_box)
 
             # Load the fixed frame (ensure the frame exists in the directory)
@@ -87,16 +88,3 @@ if uploaded_file:
             st.warning("Please adjust the crop box before generating the image.")
 else:
     st.write("Please upload an image file to start.")
-
-# Add custom CSS for responsiveness (Optional)
-st.markdown(
-    """
-    <style>
-    [data-testid="stCropper"] {
-        max-width: 100%;
-        overflow: hidden;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
