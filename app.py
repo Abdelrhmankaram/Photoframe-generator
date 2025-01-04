@@ -39,7 +39,7 @@ if uploaded_file is not None:
         
         # Crop the original high-quality image using the mapped coordinates
         cropped_image = original_image.crop(crop_box)
-        st.image(cropped_image, caption="Cropped Image", use_column_width=True)
+        st.image(cropped_image, caption="Cropped Image", use_container_width=True)
 
         # Load the fixed frame file (frame.webp)
         frame = Image.open("frame.webp")
@@ -55,7 +55,7 @@ if uploaded_file is not None:
         combined_image = Image.alpha_composite(cropped_image, frame)
 
         # Display the combined image
-        st.image(combined_image, caption="Cropped Image with Frame", use_column_width=True)
+        st.image(combined_image, caption="Cropped Image with Frame", use_container_width=True)
 
         # Add a download button for the combined image
         combined_image_io = io.BytesIO()
