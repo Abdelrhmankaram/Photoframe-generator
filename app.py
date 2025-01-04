@@ -17,10 +17,18 @@ if uploaded_file:
     # Open the uploaded image file
     original_image = Image.open(uploaded_file).convert("RGBA")
 
-    # Display the cropper directly on the original image
+    # Resize the image for display (e.g., 800px max width, maintaining aspect ratio) for the cropper only
+    max_width = 800
+    display_image = original_image  # Keep the original for quality
+    if original_image.width > max_width:
+        aspect_ratio = original_image.height / original_image.width
+        new_height = int(max_width * aspect_ratio)
+        display_image = original_image.resize((max_width, new_height), Image.Resampling.LANCZOS)
+
+    # Display the cropper directly on the resized image for cropping
     st.write("Adjust the crop box to a 1:1 aspect ratio and click 'Generate Image with Frame'.")
     cropped_preview = st_cropper(
-        original_image, aspect_ratio=(1, 1), return_type="box", box_color="blue"
+        display_image, aspect_ratio=(1, 1), return_type="box", box_color="blue"
     )
 
     # Button to generate the cropped image with the frame
@@ -34,7 +42,7 @@ if uploaded_file:
                 int(cropped_preview["top"] + cropped_preview["height"]),
             )
 
-            # Crop the original high-quality image
+            # Crop the original high-quality image (without resizing it)
             cropped_image = original_image.crop(crop_box)
 
             # Load the fixed frame (ensure the frame exists in the directory)
