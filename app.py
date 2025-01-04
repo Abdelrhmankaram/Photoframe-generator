@@ -11,14 +11,34 @@ uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "p
 
 if uploaded_file is not None:
     # Open the uploaded image file
-    image = Image.open(uploaded_file)
+    original_image = Image.open(uploaded_file)
+
+    # Resize the image for cropping preview (better for smaller screens)
+    max_preview_width = 300
+    aspect_ratio = original_image.height / original_image.width
+    new_preview_height = int(max_preview_width * aspect_ratio)
+    preview_image = original_image.resize(
+        (max_preview_width, new_preview_height), Image.Resampling.LANCZOS
+    )
+
     st.write("Adjust the crop box to a 1:1 aspect ratio and click 'Crop Image'.")
+    
+    # Display the cropper with the resized preview image
+    cropped_preview = st_cropper(preview_image, aspect_ratio=(1, 1), return_type="box")
 
-    # Display the cropper with a fixed 1:1 aspect ratio
-    cropped_image = st_cropper(image, aspect_ratio=(1, 1))
-
-    # Show the cropped image
-    if cropped_image:
+    if cropped_preview:
+        # Map crop coordinates to the original high-resolution image
+        crop_box = (
+            int(cropped_preview["left"] * original_image.width / preview_image.width),
+            int(cropped_preview["top"] * original_image.height / preview_image.height),
+            int(cropped_preview["width"] * original_image.width / preview_image.width)
+            + int(cropped_preview["left"] * original_image.width / preview_image.width),
+            int(cropped_preview["height"] * original_image.height / preview_image.height)
+            + int(cropped_preview["top"] * original_image.height / preview_image.height),
+        )
+        
+        # Crop the original high-quality image using the mapped coordinates
+        cropped_image = original_image.crop(crop_box)
         st.image(cropped_image, caption="Cropped Image", use_column_width=True)
 
         # Load the fixed frame file (frame.webp)
