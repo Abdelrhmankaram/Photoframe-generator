@@ -2,6 +2,11 @@ import streamlit as st
 from PIL import Image
 from streamlit_cropper import st_cropper
 import io
+import warnings
+
+# Suppress specific warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 # Set the title for the Streamlit app
 st.title("Photo Upload, Clipping, and Frame Adding App")
