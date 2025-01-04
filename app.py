@@ -14,18 +14,18 @@ st.title("Photo Upload, Clipping, and Frame Adding App")
 uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
-    # Open the uploaded image file
+    # Open the uploaded image file in its original quality
     original_image = Image.open(uploaded_file).convert("RGBA")
 
-    # Downscale the image for the cropper
-    cropper_image = original_image.resize(
-        (original_image.width // 4, original_image.height // 4), Image.Resampling.LANCZOS
-    )
+    # Resize the image to fit within a defined size for the cropper (temporary)
+    cropper_size = 500  # Maximum size (width or height) for the cropper
+    temp_image = original_image.copy()
+    temp_image.thumbnail((cropper_size, cropper_size), Image.Resampling.LANCZOS)
 
-    # Display the cropper directly on the downscaled image
+    # Display the cropper directly on the resized image
     st.write("Adjust the crop box to a 1:1 aspect ratio and click 'Generate Image with Frame'.")
     cropped_preview = st_cropper(
-        cropper_image,
+        temp_image,
         aspect_ratio=(1, 1),
         return_type="box",
         box_color="blue",
@@ -34,16 +34,19 @@ if uploaded_file:
     # Button to generate the cropped image with the frame
     if st.button("Generate Image with Frame"):
         if cropped_preview:
-            # Map crop coordinates back to the original image size
-            scale_factor = 4  # Inverse of the downscale factor
+            # Calculate the scaling factor to revert the crop box to the original image size
+            scale_factor_x = original_image.width / temp_image.width
+            scale_factor_y = original_image.height / temp_image.height
+
+            # Get the crop coordinates and apply scaling
             crop_box = (
-                int(cropped_preview["left"] * scale_factor),
-                int(cropped_preview["top"] * scale_factor),
-                int((cropped_preview["left"] + cropped_preview["width"]) * scale_factor),
-                int((cropped_preview["top"] + cropped_preview["height"]) * scale_factor),
+                int(cropped_preview["left"] * scale_factor_x),
+                int(cropped_preview["top"] * scale_factor_y),
+                int((cropped_preview["left"] + cropped_preview["width"]) * scale_factor_x),
+                int((cropped_preview["top"] + cropped_preview["height"]) * scale_factor_y),
             )
 
-            # Crop the original high-quality image
+            # Crop the original high-quality image using the calculated coordinates
             cropped_image = original_image.crop(crop_box)
 
             # Load the fixed frame (ensure the frame exists in the directory)
