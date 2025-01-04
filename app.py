@@ -17,8 +17,8 @@ if uploaded_file:
     # Open the uploaded image file
     original_image = Image.open(uploaded_file).convert("RGBA")
 
-    # Resize the image for display (e.g., 800px max width, maintaining aspect ratio) for the cropper only
-    max_width = 800
+    # Dynamically adjust image width based on screen size
+    max_width = 400 if st.session_state.get("is_mobile", False) else 800
     display_image = original_image  # Keep the original for quality
     if original_image.width > max_width:
         aspect_ratio = original_image.height / original_image.width
@@ -87,3 +87,16 @@ if uploaded_file:
             st.warning("Please adjust the crop box before generating the image.")
 else:
     st.write("Please upload an image file to start.")
+
+# Add custom CSS for responsiveness (Optional)
+st.markdown(
+    """
+    <style>
+    [data-testid="stCropper"] {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
