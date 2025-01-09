@@ -51,14 +51,14 @@ if uploaded_file:
 
             # Load the fixed frame (ensure the frame exists in the directory)
             try:
-                frame = Image.open("frame.webp").convert("RGBA")
+                frame = Image.open("birthday-card.png").convert("RGBA")
             except FileNotFoundError:
                 st.error("Frame file not found. Ensure 'frame.webp' is in the working directory.")
                 st.stop()
 
             # Resize the cropped image to be smaller than the frame (e.g., 70% of the frame's size)
             resized_cropped_image = cropped_image.resize(
-                (int(frame.width * 0.7), int(frame.height * 0.7)), Image.Resampling.LANCZOS
+                (int(frame.width), int(frame.height)), Image.Resampling.LANCZOS
             )
 
             # Calculate position to center the cropped image on the frame
